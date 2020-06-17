@@ -1,62 +1,94 @@
-// Create SVG
+const axios = require("axios");
+
 const width = 500;
 const height = width;
 
-const svg = d3
-  .select(".container")
-  .append("svg")
-  .attr("width", width)
-  .attr("height", height);
-
-// Send request to EDMtrain API and turn JSON file
-
 const dataInput = [];
 
-// d3.request(
-//   "https://edmtrain.com/api/events?festivalInd=true&client=d1d30f63-079d-4607-840c-a39670f1500e"
-// ).get((error, data) => {
-  let recvData;
-  let temObj;
-  if (error) console.log(error);
-  recvData = JSON.parse(data.response).data;
-  console.log(recvData);
-  temObj = recvData.reduce((total, curr) => {
-    total[curr.venue.state]
-      ? total[curr.venue.state]++
-      : (total[curr.venue.state] = 1);
-    return total;
-  }, {});
-  console.log(temObj);
-  for (let state in temObj) {
-    if (state == "null") {
-      state = "Virtual";
-      dataInput.push({ state: state, numOfEvents: temObj[null] });
-    } else {
-      dataInput.push({ state: state, numOfEvents: temObj[state] });
+axios
+  .get(
+    "https://edmtrain.com/api/events?festivalInd=true&client=d1d30f63-079d-4607-840c-a39670f1500e"
+  )
+  .then((res) => {
+    let recvData;
+    let temObj;
+    // console.log(res.data);
+    recvData = res.data.data;
+    // console.log(recvData);
+
+    temObj = recvData.reduce((total, curr) => {
+      total[curr.venue.state]
+        ? total[curr.venue.state]++
+        : (total[curr.venue.state] = 1);
+      return total;
+    }, {});
+    // console.log(temObj);
+
+    for (let state in temObj) {
+      if (state == "null") {
+        state = "Virtual";
+        dataInput.push({ state: state, numOfEvents: temObj[null] });
+      } else {
+        dataInput.push({ state: state, numOfEvents: temObj[state] });
+      }
     }
-  }
-  console.log(dataInput);
+    console.log(dataInput);
+  })
+  .catch((err) => console.log(err))
+  .then(() => {
+    const color = d3.scaleOrdinal(
+      dataInput.map((d) => d.state),
+      d3.schemeCategory10
+    );
 
-  const g = svg
-    .selectAll("g")
-    .data(dataInput)
-    .enter()
-    .append("g")
-    // .attr("transform", (d, i) => "translate(0,0)");
+    const pack = (data) => {
+      return d3
+        .pack()
+        .size([width - 2, height - 2])
+        .padding(3)(d3.hierarchy({ children: data }).sum((d) => d.numOfEvents));
+    };
 
-  g.append("circle")
-    .attr("cx", (d, i) => i * 100 + 50)
-    .attr("cy", 100)
-    .attr("r", (d) => d.numOfEvents * 3);
+    const root = pack(dataInput);
 
-  g.append("text")
-    .attr("x", (d, i) => i * 100 + 40)
-    .attr("y", 105)
-    .attr("stroke", "#fff")
-    .attr("font-size", "12px")
-    .attr("font-family", "sans-serif")
-    .text((d) => d.state);
-});
+    console.log(root);
+
+    const svg = d3
+      .select(".container")
+      .append("svg")
+      .attr("viewBox", [0, 0, width, height])
+      .attr("font-size", 10)
+      .attr("font-family", "sans-serif")
+      .attr("text-anchor", "middle");
+
+    const leaf = svg
+      .selectAll("g")
+      .data(root.leaves())
+      .join("g")
+      .attr("transform", (d) => `translate(${d.x + 1},${d.y + 1})`);
+
+    leaf
+      .append("circle")
+      .attr("r", (d) => d.r)
+      .attr("fill-opacity", 0.7)
+      .attr("fill", (d) => color(d.data.state));
+
+    // leaf
+    //   .append("clipPath")
+    //   .attr("id", (d) => (d.clipUid = DOM.uid("clip")).id)
+    //   .append("use")
+    //   .attr("xlink:href", (d) => d.leafUid.href);
+
+    leaf
+      .append("text")
+      // .attr("clip-path", (d) => d.clipUid)
+      // .selectAll("tspan")
+      // .data((d) => d.data.state)
+      // .join("tspan")
+      .attr("x", 0)
+      .attr("y", 4)
+      .text((d) => d.data.state);
+
+  });
 
 // ---------- Request token from Spotify ----------
 

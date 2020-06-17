@@ -16,6 +16,8 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "axios": "^0.19.2",
+    "d3-require": "^1.2.4",
     "dotenv": "^8.2.0"
   }
 }
