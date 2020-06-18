@@ -1,12 +1,12 @@
 module.exports = {
   entry: "./src/index.js",
   output: {
-    path: __dirname + "/public",
-    publicPath: "/",
+    path: __dirname + "/dist",
+    publicPath: "/d3-bubblechart/",
     filename: "bundle.js",
   },
   devServer: {
-    contentBase: "./public",
+    contentBase: "./dist",
   },
 };
 
