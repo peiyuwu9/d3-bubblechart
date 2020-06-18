@@ -52,42 +52,101 @@ axios
 
     console.log(root);
 
-    const svg = d3
+    // ---------- Svg 1 ----------
+    const svg1 = d3
       .select(".container")
       .append("svg")
-      .attr("viewBox", [0, 0, width, height])
+      // .attr("viewBox", [0, 0, width, height])
+      .attr("width", width)
+      .attr("height", height)
       .attr("font-size", 10)
       .attr("font-family", "sans-serif")
       .attr("text-anchor", "middle");
 
-    const leaf = svg
+    const leaf1 = svg1
       .selectAll("g")
       .data(root.leaves())
       .join("g")
       .attr("transform", (d) => `translate(${d.x + 1},${d.y + 1})`);
 
-    leaf
+    leaf1
       .append("circle")
       .attr("r", (d) => d.r)
       .attr("fill-opacity", 0.7)
       .attr("fill", (d) => color(d.data.state));
 
-    // leaf
-    //   .append("clipPath")
-    //   .attr("id", (d) => (d.clipUid = DOM.uid("clip")).id)
-    //   .append("use")
-    //   .attr("xlink:href", (d) => d.leafUid.href);
-
-    leaf
+    leaf1
       .append("text")
-      // .attr("clip-path", (d) => d.clipUid)
-      // .selectAll("tspan")
-      // .data((d) => d.data.state)
-      // .join("tspan")
       .attr("x", 0)
       .attr("y", 4)
       .text((d) => d.data.state);
 
+    // ---------- Svg 2 ----------
+
+    const svg2 = d3
+      .select(".container")
+      .append("svg")
+      // .attr("viewBox", [0, 0, width, height])
+      .attr("width", width)
+      .attr("height", height)
+      .attr("font-size", 10)
+      .attr("font-family", "sans-serif")
+      .attr("text-anchor", "middle");
+
+    const leaf2 = svg2.selectAll("g").data(root.leaves()).join("g");
+
+    leaf2
+      .append("circle")
+      .attr("r", (d) => d.r)
+      .attr("fill-opacity", 0.7)
+      .attr("fill", (d) => color(d.data.state));
+
+    leaf2
+      .append("text")
+      .attr("x", 0)
+      .attr("y", 4)
+      .text((d) => d.data.state);
+
+    const ticked = () => {
+      leaf2.attr("transform", (d) => {
+        return `translate(${d.x},${d.y})`;
+      });
+    };
+
+    const simulation = d3
+      .forceSimulation(root.leaves())
+      .force("charge", d3.forceManyBody().strength(100))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force(
+        "collide",
+        d3.forceCollide((d) => d.r + 2)
+      )
+      .on("tick", ticked);
+
+    const dragstarted = (d) => {
+      simulation.alphaTarget(0.3).restart();
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    };
+
+    const dragged = (d) => {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    };
+
+    const dragended = (d) => {
+      simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    };
+
+    const drag = d3
+      .drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
+
+    leaf2.call(drag);
   });
 
 // ---------- Request token from Spotify ----------
