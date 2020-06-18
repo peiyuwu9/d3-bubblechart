@@ -63,7 +63,9 @@ axios
       .attr("font-family", "sans-serif")
       .attr("text-anchor", "middle");
 
-    const leaf1 = svg1
+    const bubbleGroup1 = svg1.append("g");
+
+    const leaf1 = bubbleGroup1
       .selectAll("g")
       .data(root.leaves())
       .join("g")
@@ -81,6 +83,14 @@ axios
       .attr("y", 4)
       .text((d) => d.data.state);
 
+    const title1 = svg1
+      .append("g")
+      .attr("transform", `translate(${width / 2}, 30)`)
+      .append("text")
+      .text("Static")
+      .attr("class", "title")
+      .attr("font-size", 30);;
+
     // ---------- Svg 2 ----------
 
     const svg2 = d3
@@ -93,7 +103,9 @@ axios
       .attr("font-family", "sans-serif")
       .attr("text-anchor", "middle");
 
-    const leaf2 = svg2.selectAll("g").data(root.leaves()).join("g");
+    const bubbleGroup2 = svg2.append("g");
+
+    const leaf2 = bubbleGroup2.selectAll("g").data(root.leaves()).join("g");
 
     leaf2
       .append("circle")
@@ -147,6 +159,14 @@ axios
       .on("end", dragended);
 
     leaf2.call(drag);
+
+    const title2 = svg2
+      .append("g")
+      .attr("transform", `translate(${width / 2}, 30)`)
+      .append("text")
+      .text("Dynamic")
+      .attr("class", "title")
+      .attr("font-size", 30);
   });
 
 // ---------- Request token from Spotify ----------
