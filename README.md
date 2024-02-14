@@ -1,9 +1,9 @@
 # D3 Bubble Chart
-An app visualizing the numbers of events in different states.
+An app visualizing the numbers of events in different states
 
 ## Motivation
 Create a app to practice D3.js with EDMtrain API
 
 ## Technologies Used and Why
-**D3.js** for data visualization.  
-**Webpack** to bundle js files. 
+**D3.js** for data visualization  
+**Webpack** to bundle js files 
